@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <gdsl.h>
+#include <string.h>
 #include "dictionary.h"
 
 int main(int argc,char **argv){
-	gdsl_constant_t result;
-	gdsl_bstree_t dictionary;
-	dictionary = init();	
-	insert_word(dictionary,"test",(int *)&result);
-	if((result == GDSL_INSERTED)) printf("inserted\n");
-	search_word(dictionary,"test");
+	char *buffer=NULL;
+	size_t len;
+	dict_t *dictionary;
+	dictionary = load_dict("random_words.txt");
+	//printf("%d\n",dictionary->size);
+	print_dict(dictionary->root);
+	//getline(&buffer,&len,stdin);
+	//printf("%s",buffer);
+	//printf("%s",search(dictionary->root,buffer)->word);
 	return 1;
 }
 

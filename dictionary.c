@@ -1,62 +1,118 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <gdsl.h>
 #include <string.h>
+#include "dictionary.h"
 
-long int compare(const gdsl_element_t node, void *string);
-
-
-gdsl_element_t insert_word(gdsl_bstree_t tree, const char *word, int *result){
-	return gdsl_bstree_insert(tree,(void *)word,result);
+dict_t * new_dict(){
+	dict_t *new;
+	new = malloc(sizeof(dict_t));
+	new->size = 0;
+	new->root = NULL;
+	return new;
 }
 
-gdsl_element_t search_word(gdsl_bstree_t tree, const char *word){
-	return gdsl_bstree_search(tree,compare,(void *)word);	
+word_t *new_word(char *word){
+	word_t *new;
+
+	if((new = malloc(sizeof(word_t)))==NULL){
+		fprintf(stderr,"OUT OF MEM.\n");
+
+	}
+
+	new->word = word;
+	new->left = NULL;
+	new->right = NULL;
+	
+	return new;
+}
+void print_dict(word_t *root){
+	if(root->right != NULL){
+		print_dict(root->left);
+	}	
+	if(root->left != NULL){
+		print_dict(root->right);
+	}
+	printf("%s\n",root->word);
+
 }
 
-gdsl_element_t new_word(void *word){
-	return (void *)word;
-}
-
-void free_word(gdsl_element_t word){
-	free((char *)word);
-
-}
-
-void load_dictionary(const char *filename,gdsl_bstree_t tree){
+dict_t *load_dict(const char *filename){
+	dict_t *new;
+	char *buffer;
 	FILE *f;
-	char *word;
 	size_t len;
-	gdsl_constant_t status;
+	int fend;
+	word_t *temp_word;
 
 	f = fopen(filename,"r");
+	fseek(f,0,SEEK_END);
+	fend = ftell(f);
+	rewind(f);
+	
 
-	do{
-		getline(&word,&len,f);
-		insert_word(tree,word,&status);
-		if(status != GDSL_INSERTED) fprintf(stderr,"DOH! Could not insert word %s\n",word);
+	new = new_dict();
+	
+	while(ftell(f) < fend){
+		buffer = NULL;
+		getline(&buffer,&len,f);
+		temp_word = new_word(buffer);
+		if(new->root == NULL){
+			new->root = temp_word;
+		}else{
+			add_word(new,temp_word);
+		}
+		new->size++;
+		
+	}
 
-	}while(word != NULL);
+	return new;
+}
+word_t *search(word_t *root, char *word){
+	word_t *pass;
+	printf("%s%s",root->word,word);
+	if(root->left != NULL){
+		pass = search(root->left,word);
+		if(pass != NULL){
+			return pass;
+		}
+	}else if(root->right != NULL){
+		pass = search(root->right,word);
+		if(pass != NULL){
+			return pass;
+		}
+	
+	}else if(strcmp(root->word,word)==0){
+		return root;
+	}
+	
+	return NULL;
+	
 
 }
+int add_word(dict_t *dict, word_t *word){
+	word_t *current = dict->root;
+	int cmp;
 
-long int compare(const gdsl_element_t node, void *string){
-	int cmpr;
-	char *node_val;
-	char *string_val;
+	while(1){
+		cmp = strcmp(current->word,word->word);
+		if(cmp > 0){
+			if(current->left==NULL){
+				current->left = word;
+				return 1;
+			}else{
+				current = current->left;
+			}
+		}else if(cmp < 0){
+			if(current->right==NULL){
+				current->right = word;
+				return 1;
+			}else{
+				current = current->right;
+			}
+		}else{
+			return 0;
+		}
 
-	node_val = (char *)node;
-	string_val = (char *)string;
-
-	cmpr = strcmp(string_val,node_val);
-	return (long int) cmpr;
-
-}
-
-gdsl_bstree_t init(){
-	gdsl_bstree_t new_tree;
-	new_tree = gdsl_bstree_alloc("DICTIONARY", new_word, free_word, compare);
-
-	return new_tree;
-
+	}
+	
 }
