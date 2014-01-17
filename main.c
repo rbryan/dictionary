@@ -8,7 +8,9 @@ void help(){
 	printf("a\t-\tAdd a word.\n");
 	printf("s\t-\tSearch for a word.\n");
 	printf("h\t-\tPrint this message.\n");
+	getchar();
 }
+
 void search(gdsl_bstree_t dict){
 	char *buffer=NULL;
 	size_t len;
@@ -22,9 +24,11 @@ void search(gdsl_bstree_t dict){
 	}else{
 		printf("That word is in the dictionary.\n");
 	}
+	//getchar();
 
 
 }
+
 void add(gdsl_bstree_t dict){
 	char *buffer=NULL;
 	size_t len;
@@ -38,10 +42,13 @@ void add(gdsl_bstree_t dict){
 	}else{
 		printf("Word added.\n");
 	}
+	//getchar();
 	
 }
+
 void print(gdsl_bstree_t dict){
 	print_tree(dict);
+	getchar();
 	
 }
 
